@@ -19,20 +19,19 @@ class RedisService:
             return
 
         try:
-            self.redis_client = redis.Redis(
-                host=settings.REDIS_HOST,
-                port=settings.REDIS_PORT,
-                db=0,
+            self.redis_client = redis.Redis.from_url(
+                settings.redis_connection_url,
                 decode_responses=True,
                 socket_connect_timeout=0.2,
                 socket_timeout=0.2
             )
             self.redis_client.ping()
-            logger.info(f"Initialized Redis client targeting {settings.REDIS_HOST}:{settings.REDIS_PORT}")
-        except Exception as e:
-            logger.warning(f"Could not connect to Redis at startup: {e}")
+            logger.info(f"Initialized Redis client targeting {settings.redis_connection_url}")
+        except Exception:
+            logger.info(f"External Redis not detected at {settings.redis_connection_url}. In-memory PubSub fallback active for WebSockets.")
             self.redis_client = None
             self._last_failed_at = time.time()
+
 
     def publish_telemetry(self, organization_id: str, telemetry_data: Dict[str, Any]) -> bool:
         """
