@@ -1,149 +1,294 @@
 # SWASEMI® Cold-Chain Monitoring Platform
 ## Technical Assessment & Project Submission Document
 
----
-
-### Executive Summary
-
-The **SWASEMI® Cold-Chain Monitoring Platform** is an enterprise-grade, multi-tenant real-time cold-chain tracking and telemetry platform designed for pharmaceutical logistics and temperature-sensitive shipment monitoring.
-
-It delivers real-time moving GPS map tracking, temperature and humidity telemetry ingestion via MQTT, automated alert breach detection with grace period rules, single-email SMTP notification delivery, live WebSocket updates without frontend polling, historical time-series analytics, and audit CSV exports.
+**Submitted by**: Ayush Soni  
+**Company**: SWASEMI  
 
 ---
 
-### Live Application & Repository Links
+### 1. Project Overview
+The **SWASEMI Cold-Chain Monitoring Platform** is a multi-tenant web application designed to monitor refrigerated shipments using simulated IoT telemetry. The system provides live tracker locations, temperature and humidity monitoring, shipment lifecycle control, historical shipment analysis, temperature alerts, organization-level access control, and CSV export.
 
-| System Component | Live URL / Location | Description |
-| :--- | :--- | :--- |
-| **Live Frontend App** | [https://swasemi-cold-chain.vercel.app](https://swasemi-cold-chain.vercel.app) | Production SPA built with React 19, TypeScript, Vite & Leaflet |
-| **Live Backend API** | [https://swasemi-backend.onrender.com](https://swasemi-backend.onrender.com) | FastAPI REST API & WebSocket Server on Render |
-| **Swagger API Docs** | [https://swasemi-backend.onrender.com/docs](https://swasemi-backend.onrender.com/docs) | Interactive OpenAPI documentation & live endpoint testing |
-| **GitHub Repository** | [https://github.com/Ayushsoni13/swasemi-cold-chain](https://github.com/Ayushsoni13/swasemi-cold-chain) | Complete source code, backend, frontend & Docker configs |
+The implementation uses **React + TypeScript + Vite, FastAPI, PostgreSQL, Redis Pub/Sub, MQTT, WebSockets, JWT authentication, Leaflet, Recharts**, and cloud deployment.
 
 ---
 
-### Demo Account Credentials
+### 2. Project and Submission Information
 
-| Account Role | Email Login | Password | Organization Scope | Access Rights |
-| :--- | :--- | :--- | :--- | :--- |
-| **Super Admin** | `admin@swasemi.demo` | `DemoAdmin123!` | System-wide (`None`) | Can manage all orgs, users, trackers, shipments & alerts |
-| **Organization User A** | `usera@swasemi.demo` | `DemoUser123!` | `org-pharma-a` (PharmaCorp) | Tenant isolated: view & manage PharmaCorp shipments |
-| **Organization User B** | `userb@swasemi.demo` | `DemoUser123!` | `org-biocold-b` (BioCold) | Tenant isolated: view & manage BioCold shipments |
-
-*Note: Public self-signup is disabled by design. Account creation is strictly restricted to Super Admins.*
+| Item | Details |
+| :--- | :--- |
+| **Company** | SWASEMI |
+| **Project** | Cold-Chain Monitoring Platform |
+| **Candidate** | Ayush Soni |
+| **Repository** | [https://github.com/Ayushsoni13/swasemi-cold-chain](https://github.com/Ayushsoni13/swasemi-cold-chain) |
+| **Frontend Deployment** | [https://swasemi-cold-chain.vercel.app](https://swasemi-cold-chain.vercel.app) |
+| **Backend API** | [https://swasemi-backend.onrender.com](https://swasemi-backend.onrender.com) |
+| **Swagger API Documentation** | [https://swasemi-backend.onrender.com/docs](https://swasemi-backend.onrender.com/docs) |
+| **Frontend Technology** | React 19 + TypeScript + Vite |
+| **Backend Technology** | Python 3.11+ + FastAPI + Pydantic v2 |
+| **Database** | PostgreSQL |
+| **Real-Time Messaging** | Redis Pub/Sub |
+| **Telemetry Protocol** | MQTT (`broker.emqx.io`) |
+| **Map** | Leaflet / React-Leaflet |
+| **Charts** | Recharts |
+| **Authentication** | JWT Bearer authentication |
 
 ---
 
-### Architecture & Telemetry Data Flow
+### 3. How to Review the Project
+- Open the live frontend: [https://swasemi-cold-chain.vercel.app](https://swasemi-cold-chain.vercel.app)
+- Use one of the demo accounts listed in Section 4.
+- Review the dashboard, organization-scoped data, live tracker locations, shipment controls, telemetry and alerts.
+- Open Swagger API documentation: [https://swasemi-backend.onrender.com/docs](https://swasemi-backend.onrender.com/docs)
+- Review the source code and project structure in GitHub: [https://github.com/Ayushsoni13/swasemi-cold-chain](https://github.com/Ayushsoni13/swasemi-cold-chain)
+- Open the backend root/API deployment: [https://swasemi-backend.onrender.com](https://swasemi-backend.onrender.com)
+
+---
+
+### 4. Demo Accounts
+*Public self-signup is disabled by design. Account provisioning is restricted to Super Admins.*
+
+| Account Role | Email | Password | Scope & Privileges |
+| :--- | :--- | :--- | :--- |
+| **Super Admin** | `admin@swasemi.demo` | `DemoAdmin123!` | System-wide access; manages organizations, users, trackers and shipments |
+| **User A (Tenant 1)** | `usera@swasemi.demo` | `DemoUser123!` | Tenant-isolated access: `org-pharma-a` / PharmaCorp |
+| **User B (Tenant 2)** | `userb@swasemi.demo` | `DemoUser123!` | Tenant-isolated access: `org-biocold-b` / BioCold |
+
+---
+
+### 5. System Architecture
+- **React + TypeScript + Vite** frontend
+- **REST API** and **WebSocket** communication
+- **FastAPI** backend
+- **JWT authentication** and organization-based authorization
+- **PostgreSQL** for organizations, users, trackers, shipments and telemetry history
+- **MQTT broker (`broker.emqx.io`)** for telemetry ingestion
+- **Redis Pub/Sub** for real-time organization-scoped fan-out
+- **WebSocket** delivery to connected frontend clients
+- **Background simulator** for moving trackers and telemetry
+- **SMTP email delivery** for temperature breach alerts
+
+---
+
+### 6. Representative Project Structure
 
 ```text
-  [Background Simulator / Moving Tracker (Ahmedabad → Gandhinagar)]
-                                 │
-                                 ▼ MQTT (swasemi/coldchain/trackers/{tracker_id})
-                         [EMQX Broker (broker.emqx.io)]
-                                 │
-                                 ▼ Background MQTT Ingestion
-                         [FastAPI Ingestion Engine]
-                         ├── 1. Validate Pydantic Telemetry Payload
-                         ├── 2. Active Shipment Telemetry Gate Check
-                         ├── 3. Breach & Grace Period Engine Evaluation
-                         ├── 4. PostgreSQL Database Persistence
-                         └── 5. Redis Pub/Sub Event Broadcast
-                                 │
-                                 ├──────────────────────────┐
-                                 ▼                          ▼
-                        [Redis Pub/Sub Channel]     [SMTP Email Service]
-                                 │                   (Breach Alert Dispatch)
-                                 ▼
-                       [WebSocket Server (/ws)]
-                                 │
-                                 ▼ Real-Time Push (Zero Frontend Polling)
-                    [React 19 + TypeScript + Leaflet Dashboard]
+swasemi-cold-chain/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── hooks/
+│   │   └── ...
+│   ├── public/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
+│
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── auth/
+│   │   ├── db/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   ├── main.py
+│   ├── alembic/
+│   └── requirements.txt
+│
+├── tests/
+├── docker-compose.yml
+├── AGENTS.md
+├── PROJECT_SUBMISSION_DOCUMENT.md
+└── README.md
 ```
 
 ---
 
-### Core Technical Features & Architecture Highlights
+### 7. Core Functional Features
 
-#### 1. Multi-Tenant Architecture & Security
-- **Strict Isolation**: Trackers, shipments, telemetry, and alerts are tied to an `organization_id`.
-- **JWT Authentication**: Normal users are bound to their organization ID derived from JWT claims. Normal users cannot view or manipulate data belonging to other organizations.
-- **Super Admin Privilege**: Super Admin accounts possess system-wide visibility and management controls (create/delete organizations, provision user accounts, create/delete trackers).
-
-#### 2. Active Shipment Telemetry Gate
-- Telemetry storage is explicitly gated by shipment status.
-- Telemetry received **before shipment start** or **after shipment end** is ignored and not recorded into shipment history.
-
-#### 3. Real-Time Telemetry & Zero Polling Architecture
-- Live telemetry is ingested over MQTT (`broker.emqx.io`).
-- Telemetry data fan-outs instantly via **Redis Pub/Sub** and **WebSockets** directly to the frontend.
-- No frontend interval polling (`setInterval` / REST polling) is used for live updates.
-
-#### 4. Temperature Breach & Grace Period Engine
-- Configurable `allowed_min_temp` and `allowed_max_temp` thresholds per shipment.
-- Configurable `grace_period_readings` (consecutive bad readings threshold).
-- **Single Email Rule**: A continuous temperature breach triggers **only one email notification**. When temperature recovers and breaches again later, a new email notification is dispatched.
-
-#### 5. Interactive GPS Map & Visual Analytics
-- Leaflet map featuring real-time moving markers, directional bearing markers, and GPS polyline route trails (e.g., Ahmedabad to Gandhinagar express route).
-- Historical Recharts time-series charts with min/max reference lines.
-- One-click tenant-scoped CSV data export for shipment audit compliance.
+- **Multi-Tenant Architecture**: Complete tenant data isolation across PostgreSQL models, queries, WebSockets, and JWT tokens. Normal users can access only data belonging to their organization; Super Admin can access all organizations.
+- **Active Shipment Telemetry Gate**: Telemetry storage is strictly active only while a shipment is `IN_TRANSIT`. Readings before shipment start or after shipment completion are ignored.
+- **Real-Time Telemetry & Zero Polling**: Telemetry is ingested through MQTT using `broker.emqx.io`, distributed through Redis Pub/Sub, and streamed to the frontend over WebSockets without frontend polling.
+- **Temperature Breach & Grace Period Engine**: Temperature readings are evaluated against configured minimum and maximum limits and consecutive bad readings. A single SMTP email alert is sent for one continuous breach and the alert state resets after recovery.
+- **Interactive Map & Audit Visuals**: The platform provides real-time moving Leaflet map markers, historical route polylines, Recharts time-series temperature charts, and CSV data export.
+- **Autonomous Cloud Deployment**: The production backend includes a background simulator service running with the FastAPI deployment on Render, providing live telemetry and map movement without requiring evaluator-side local simulator execution.
+- **Automated Testing**: The project includes 55 unit and integration tests, reported as passing cleanly in the final project validation.
 
 ---
 
-### Mandatory Assessment Requirements Compliance Matrix
-
-| # | Assessment Requirement | Status | Implementation Detail |
-| :--- | :--- | :--- | :--- |
-| **1** | Multi-tenant architecture | **PASSED** | Data models enforced with `organization_id` |
-| **2** | Every tracker belongs to 1 org | **PASSED** | Foreign key constraint on `trackers.organization_id` |
-| **3** | Every shipment belongs to 1 org | **PASSED** | Foreign key constraint on `shipments.organization_id` |
-| **4** | Every telemetry record belongs to 1 org | **PASSED** | Enforced via `telemetry.organization_id` |
-| **5** | Normal users access only their org | **PASSED** | Middleware & service query filtering using JWT tenant context |
-| **6** | Super Admin accesses all orgs | **PASSED** | Super Admin bypasses org filter |
-| **7** | NO public signup | **PASSED** | Self-registration endpoint removed |
-| **8** | Only Super Admin creates orgs/users | **PASSED** | Protected endpoints `POST /organizations` & `POST /users` |
-| **9** | JWT authentication required | **PASSED** | Bearer token authentication on all protected routes |
-| **10** | Backend enforces tenant isolation | **PASSED** | Verified in backend database query filters |
-| **11** | Never trust `organization_id` from user | **PASSED** | Payload `organization_id` ignored for normal users |
-| **12** | Org ID comes from JWT | **PASSED** | Derived from `current_user.organization_id` |
-| **13** | Start shipment activates telemetry | **PASSED** | `status` set to `IN_TRANSIT` |
-| **14** | Telemetry before start NOT stored | **PASSED** | Active shipment gate validates `IN_TRANSIT` state |
-| **15** | Telemetry after end NOT stored | **PASSED** | `COMPLETED` / `CANCELLED` shipments ignore telemetry |
-| **16** | MQTT used for telemetry | **PASSED** | Ingested via `paho-mqtt` on `broker.emqx.io` |
-| **17** | At least 3 moving trackers in simulator | **PASSED** | TRK-001, TRK-002, TRK-003 moving routes configured |
-| **18** | Redis for real-time fan-out | **PASSED** | Redis Pub/Sub channel `coldchain:telemetry` |
-| **19** | WebSocket provides live updates | **PASSED** | WebSocket endpoint `/ws` |
-| **20** | No polling for live telemetry | **PASSED** | Native WebSocket pushes |
-| **21** | WebSockets organization scoped | **PASSED** | WS connection validates JWT and filters events |
-| **22** | Min/max limits supported | **PASSED** | Evaluated on every telemetry reading |
-| **23** | Consecutive grace period supported | **PASSED** | Tracked via `consecutive_breach_count` |
-| **24** | 1 continuous breach = 1 email | **PASSED** | Controlled via `is_active_breach` state |
-| **25** | New breach after recovery = new email | **PASSED** | State resets upon temperature recovery |
-| **26** | Real SMTP delivery supported | **PASSED** | Configured via `app.services.email_service` |
-| **27** | Historical shipment temperature chart | **PASSED** | Interactive Recharts component |
-| **28** | Historical GPS trail | **PASSED** | Leaflet GPS route trail polyline |
-| **29** | CSV export required | **PASSED** | `GET /shipments/{id}/export` downloads audit CSV |
-| **30** | Deployment works autonomously | **PASSED** | Background simulator service runs automatically on Render |
+### 8. Shipment Lifecycle and Telemetry Rules
+- A tracker is associated with an organization and can have an active shipment.
+- `Start Shipment` changes the shipment into the active/in-transit state.
+- Telemetry is accepted and persisted only while the shipment is active.
+- Telemetry received before shipment start is not stored.
+- Telemetry received after shipment completion is not stored.
+- `End Shipment` closes the active shipment and stops telemetry persistence for that shipment.
+- The simulator publishes moving tracker telemetry through MQTT.
 
 ---
 
-### Verification & Automated Testing
-
-- **Backend Test Suite**: Written using `pytest` and `httpx`.
-- **Test Results**: All **55 unit and integration tests** pass cleanly without errors or warnings.
-- **Coverage**:
-  - `test_auth.py` (10 tests)
-  - `test_health.py` (2 tests)
-  - `test_phase3.py` (12 tests - Multi-tenancy & CRUD)
-  - `test_phase4.py` (10 tests - Telemetry Gate & Ingestion)
-  - `test_phase5.py` (10 tests - Alerts, Grace Period & Single Email)
-  - `test_phase6.py` (11 tests - WebSockets, CSV Export & Background Services)
+### 9. Multi-Tenancy and Security
+- Each normal user belongs to one organization.
+- Trackers, shipments and telemetry records are organization-scoped.
+- Organization context for authenticated users is derived from the JWT/session context rather than trusted from arbitrary user request data.
+- Backend authorization enforces tenant isolation, including API and WebSocket access.
+- Super Admin operates at system level and can manage multiple organizations.
+- Public self-registration is disabled.
+- JWT Bearer authentication is required for protected API access.
 
 ---
 
-### Mandatory Tech Stack
+### 10. Real-Time Telemetry Flow
+1. The simulator publishes telemetry to the MQTT broker.
+2. FastAPI receives and validates telemetry payloads.
+3. The shipment gate determines whether the reading may be persisted.
+4. Accepted readings are stored in PostgreSQL.
+5. Telemetry events are published to the organization-scoped Redis Pub/Sub channel.
+6. WebSocket connections receive only the events authorized for their organization.
+7. The React dashboard updates the live map and telemetry display without frontend polling.
 
-- **Backend**: Python 3.11+, FastAPI, Pydantic v2, SQLAlchemy 2.x, PostgreSQL, Alembic, Redis Pub/Sub, PyJWT, `paho-mqtt`, `pytest`
-- **Frontend**: React 19, TypeScript, Vite, React-Leaflet, Leaflet, Recharts, Lucide React, Vanilla CSS
-- **Infrastructure**: Docker & Docker Compose, Render (Backend API + Postgres + Redis), Vercel (Frontend SPA)
+---
+
+### 11. Temperature Monitoring and Alerts
+- Shipment temperature limits can be configured using minimum and maximum thresholds.
+- The alert engine detects consecutive out-of-range readings according to the configured grace period.
+- A continuous breach generates one email alert rather than repeated emails for every bad reading.
+- When temperature returns to the valid range, the breach state recovers.
+- A later, separate breach after recovery generates a new alert.
+- SMTP is used for real email delivery.
+
+---
+
+### 12. Historical Monitoring
+- Historical shipment temperature data can be displayed as time-series charts using Recharts.
+- Historical GPS readings can be visualized as a route/trail on the map.
+- Telemetry/history data can be exported as CSV for audit and review.
+
+---
+
+### 13. API and Integration Review
+
+| Resource / Interface | Purpose |
+| :--- | :--- |
+| **REST API** | Authentication, organizations, users, trackers, shipments, history and export operations |
+| **Swagger / OpenAPI** | [https://swasemi-backend.onrender.com/docs](https://swasemi-backend.onrender.com/docs) |
+| **WebSocket** | Live organization-scoped telemetry updates |
+| **MQTT** | Telemetry ingestion from simulator/tracker source |
+| **Redis Pub/Sub** | Real-time event fan-out |
+| **PostgreSQL** | Persistent application and telemetry data |
+| **SMTP** | Temperature breach email notifications |
+
+---
+
+### 14. Deployment
+
+| Component | Deployment |
+| :--- | :--- |
+| **Frontend** | Vercel |
+| **Backend** | Render |
+| **Database** | Render PostgreSQL |
+| **Redis** | Render Redis |
+| **MQTT Broker** | `broker.emqx.io` |
+| **Source Control** | GitHub |
+
+*The deployed application is intended to be reviewable without requiring the evaluator to run the project locally.*
+
+---
+
+### 15. Assessment Compliance Matrix
+
+| # | Assessment Requirement | Status |
+| :--- | :--- | :--- |
+| **1** | Multi-tenant architecture | **PASSED** |
+| **2** | Every tracker belongs to exactly 1 org | **PASSED** |
+| **3** | Every shipment belongs to exactly 1 org | **PASSED** |
+| **4** | Every telemetry record belongs to 1 org | **PASSED** |
+| **5** | Normal users access only their org | **PASSED** |
+| **6** | Super Admin accesses all orgs | **PASSED** |
+| **7** | NO public signup | **PASSED** |
+| **8** | Only Super Admin creates orgs/users | **PASSED** |
+| **9** | JWT authentication required | **PASSED** |
+| **10** | Backend enforces tenant isolation | **PASSED** |
+| **11** | Never trust `organization_id` from user body | **PASSED** |
+| **12** | Org ID comes strictly from JWT | **PASSED** |
+| **13** | Start shipment activates telemetry storage | **PASSED** |
+| **14** | Telemetry before start NOT stored | **PASSED** |
+| **15** | Telemetry after end NOT stored | **PASSED** |
+| **16** | MQTT used for telemetry ingestion | **PASSED** |
+| **17** | Moving trackers in simulator | **PASSED** |
+| **18** | Redis used for real-time fan-out | **PASSED** |
+| **19** | WebSocket provides live updates | **PASSED** |
+| **20** | Zero frontend polling for live telemetry | **PASSED** |
+| **21** | WebSockets organization scoped | **PASSED** |
+| **22** | Temperature min/max limits supported | **PASSED** |
+| **23** | Consecutive grace period supported | **PASSED** |
+| **24** | 1 continuous breach = 1 email alert | **PASSED** |
+| **25** | New breach after recovery = new email | **PASSED** |
+| **26** | Real SMTP email delivery supported | **PASSED** |
+| **27** | Historical shipment temperature chart | **PASSED** |
+| **28** | Historical GPS route trail | **PASSED** |
+| **29** | CSV data export required | **PASSED** |
+| **30** | Autonomous deployment without local code | **PASSED** |
+
+---
+
+### 16. Technology Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | React 19, TypeScript, Vite |
+| **Backend** | Python 3.11+, FastAPI, Pydantic v2 |
+| **Authentication** | JWT Bearer |
+| **Database** | PostgreSQL |
+| **ORM / Persistence** | SQLAlchemy 2.x / Alembic |
+| **Real-Time** | Redis Pub/Sub + WebSocket |
+| **IoT Telemetry** | MQTT (`broker.emqx.io`) |
+| **Simulator** | Python-based moving tracker simulator service |
+| **Mapping** | Leaflet / React-Leaflet |
+| **Charts** | Recharts |
+| **Email** | SMTP |
+| **Testing** | pytest (55 unit & integration tests) |
+| **Containerization** | Docker / Docker Compose |
+| **Deployment** | Vercel + Render |
+| **Version Control** | Git + GitHub |
+
+---
+
+### 17. Testing and Validation
+The final project validation reported **55 unit and integration tests passing cleanly**. The validation also covered frontend build, database migration, MQTT telemetry flow, Redis/WebSocket real-time behavior, SMTP alert delivery, security/tenant isolation, and end-to-end application behavior.
+
+---
+
+### 18. Evaluation Checklist
+- Open the live frontend: [https://swasemi-cold-chain.vercel.app](https://swasemi-cold-chain.vercel.app)
+- Log in as Super Admin (`admin@swasemi.demo`) and review system-wide access.
+- Log in as User A (`usera@swasemi.demo`) and verify organization-specific data (`org-pharma-a`).
+- Log in as User B (`userb@swasemi.demo`) and verify that User A's tenant data is not accessible.
+- Review Start Shipment and End Shipment behavior.
+- Observe live tracker movement and telemetry.
+- Review temperature charts, GPS trail and CSV export.
+- Review temperature alert behavior where applicable.
+- Open Swagger ([https://swasemi-backend.onrender.com/docs](https://swasemi-backend.onrender.com/docs)) and inspect the available API endpoints.
+- Review the GitHub repository ([https://github.com/Ayushsoni13/swasemi-cold-chain](https://github.com/Ayushsoni13/swasemi-cold-chain)) for source code, configuration, tests and documentation.
+
+---
+
+### 19. Important Review URLs
+
+| Purpose | URL |
+| :--- | :--- |
+| **Live Frontend** | [https://swasemi-cold-chain.vercel.app](https://swasemi-cold-chain.vercel.app) |
+| **Backend API** | [https://swasemi-backend.onrender.com](https://swasemi-backend.onrender.com) |
+| **Swagger / OpenAPI** | [https://swasemi-backend.onrender.com/docs](https://swasemi-backend.onrender.com/docs) |
+| **GitHub Repository** | [https://github.com/Ayushsoni13/swasemi-cold-chain](https://github.com/Ayushsoni13/swasemi-cold-chain) |
+
+---
+
+### 20. Submission Notes
+This document is provided as the technical assessment and project submission summary for **SWASEMI**. The live links above provide direct access to the deployed application, backend API, and API documentation, while the GitHub repository provides access to the source code and project materials.
+
+**Candidate**: Ayush Soni  
+**Company**: SWASEMI  
