@@ -12,6 +12,7 @@ from app.api.alerts import router as alerts_router
 from app.api.websocket import router as websocket_router
 from app.services.mqtt_service import mqtt_service
 from app.services.redis_listener import redis_listener
+from app.services.simulator_service import background_simulator
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,7 +20,7 @@ async def lifespan(app: FastAPI):
     from app.services.websocket_manager import ws_manager
     ws_manager.set_main_loop(asyncio.get_running_loop())
 
-    # Start MQTT Subscriber & Redis Listener background services
+    # Start MQTT Subscriber, Redis Listener & Background Simulator services
     try:
         mqtt_service.start()
     except Exception as e:
@@ -30,10 +31,19 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"Warning: Could not start Redis listener service: {e}")
 
+    try:
+        background_simulator.start(loop=asyncio.get_running_loop())
+    except Exception as e:
+        print(f"Warning: Could not start background simulator service: {e}")
 
     yield
 
     # Shutdown
+    try:
+        background_simulator.stop()
+    except Exception as e:
+        print(f"Error stopping background simulator service: {e}")
+
     try:
         mqtt_service.stop()
     except Exception as e:
