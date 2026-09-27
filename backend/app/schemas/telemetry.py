@@ -18,10 +18,11 @@ class TelemetryPayloadSchema(BaseModel):
     def populate_tracker_id_and_timestamp(cls, values: Any) -> Any:
         if isinstance(values, dict):
             if "tracker_id" not in values:
-                for key in ("device_id", "deviceId", "trackerId", "id"):
+                for key in ("device_id", "deviceId", "vehicle_id", "vehicleId", "vehicle", "truck_id", "trackerId", "id"):
                     if key in values and values[key]:
                         values["tracker_id"] = str(values[key])
                         break
+
             if "timestamp" not in values or not values["timestamp"]:
                 values["timestamp"] = datetime.now(timezone.utc)
         return values

@@ -52,13 +52,14 @@ def process_telemetry_payload(
     try:
         telemetry_in = TelemetryPayloadSchema.model_validate(payload_dict)
     except ValidationError as ve:
-        logger.warning(f"Telemetry validation error for tracker '{payload_dict.get('tracker_id')}': {ve}")
+        logger.debug(f"Telemetry validation skipped for non-matching MQTT payload: {ve}")
         return None
 
     tracker = db.query(Tracker).filter(Tracker.id == telemetry_in.tracker_id).first()
     if not tracker:
-        logger.warning(f"Received telemetry for unknown tracker: '{telemetry_in.tracker_id}'")
+        logger.debug(f"Received telemetry for unregistered tracker: '{telemetry_in.tracker_id}'")
         return None
+
 
     # Update Tracker status & last_seen
     tracker.last_seen = telemetry_in.timestamp
